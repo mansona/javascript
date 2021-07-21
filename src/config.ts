@@ -10,7 +10,8 @@ import shelljs = require('shelljs');
 
 import * as api from './api';
 import { Authenticator } from './auth';
-import { CloudAuth } from './cloud_auth';
+import { AzureAuth } from './azure_auth';
+import { GoogleCloudPlatformAuth } from './gcp_auth';
 import {
     Cluster,
     ConfigOptions,
@@ -39,7 +40,8 @@ function fileExists(filepath: string): boolean {
 
 export class KubeConfig {
     private static authenticators: Authenticator[] = [
-        new CloudAuth(),
+        new AzureAuth(),
+        new GoogleCloudPlatformAuth(),
         new ExecAuth(),
         new FileAuth(),
         new OpenIDConnectAuth(),
