@@ -30,16 +30,20 @@ export class GoogleCloudPlatformAuth implements Authenticator {
         user: User,
         opts: request.Options | https.RequestOptions,
     ): Promise<void> {
-        const token = this.getToken(user);
+        const token = await this.getToken(user);
         if (token) {
             opts.headers!.Authorization = `Bearer ${token}`;
         }
     }
 
-    private getToken(user: User): string | null {
+    private async getToken(user: User): Promise<string | null> {
         const config = user.authProvider.config;
         if (this.isExpired(config)) {
-            this.updateAccessToken(config);
+            if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+                await this.updateAccessTokenAuthLib(config);
+            } else {
+                this.updateAccessToken(config);
+            }
         }
         return config['access-token'];
     }
@@ -92,5 +96,16 @@ export class GoogleCloudPlatformAuth implements Authenticator {
 
         config['access-token'] = jsonpath.JSONPath(tokenPathKey, resultObj);
         config.expiry = jsonpath.JSONPath(expiryPathKey, resultObj);
+    }
+
+    private async updateAccessTokenAuthLib(config: Config): Promise<void> {
+        const {GoogleAuth} = require('google-auth-library');
+        const auth = new GoogleAuth({
+            scopes: 'https://www.googleapis.com/auth/cloud-platform'
+        });
+        const client = await auth.getClient();
+
+        config['access-token'] = client.credentials.access_token;
+        config.expiry = new Date(client.credentials.expiry_date).toString();
     }
 }
