@@ -37,7 +37,7 @@ export class GoogleCloudPlatformAuth implements Authenticator {
     }
 
     private async getToken(user: User): Promise<string | null> {
-        const config = user.authProvider.config;
+        const config = user.authProvider.config || {};
         if (this.isExpired(config)) {
             if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
                 await this.updateAccessTokenAuthLib(config);
