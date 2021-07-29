@@ -105,6 +105,14 @@ export class GoogleCloudPlatformAuth implements Authenticator {
         });
         const client = await auth.getClient();
 
+        // make a request to populate credentials
+        const projectId = await auth.getProjectId();
+        const url = `https://container.googleapis.com/v1/projects/${projectId}/zones/asia-east1-a/serverconfig`;
+        await client.request({ url });
+
+        console.log('**** got client credentials', client.credentials);
+        console.log('**** got client', client);
+
         config['access-token'] = client.credentials.access_token;
         config.expiry = new Date(client.credentials.expiry_date).toString();
     }
